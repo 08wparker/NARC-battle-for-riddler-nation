@@ -1,0 +1,54 @@
+---
+title: "data viz after PCA clustering"
+output: html_notebook
+---
+
+
+
+```{r libraries}
+#devtools::install_github("hadley/tidyr")
+library(tidyverse)
+```
+
+```{r Convenience_functions}
+#Convenience functions I end up using a lot 
+numextract <- function(string){
+  as.numeric(str_extract(string, "\\-*\\d+\\.*\\d*"))
+}
+
+comma <- function(x) format(x, digits = 3, big.mark = ",")
+
+comma_0 <- function(x) format(x, digits = 0, big.mark = ",")
+
+
+```
+
+```{r clustered}
+clustered_strats <- read_csv("kmeans_clustered_strategies.csv") %>% select(-X1)
+```
+
+```{r kmeans_vis_median}
+clustered_long <- clustered_strats %>%
+  pivot_longer(-cluster, names_to = "castle", values_to = "troops") %>%
+  mutate(castle = numextract(castle))
+
+clustered_long %>%
+  group_by(cluster, castle) %>% 
+  summarise(median_troops = median(troops)) %>%
+  ggplot(aes(x = castle, y = median_troops, color = factor(cluster))) + geom_line() + labs(y = "Median Troops", x = "Castle") + scale_x_continuous(breaks = seq(1, 10, 1))
+```
+
+
+```{r kmeans_vis_mean}
+clustered_long %>%
+  group_by(cluster, castle) %>% 
+  summarise(mean_troops = mean(troops)) %>%
+  ggplot(aes(x = castle, y = mean_troops, color = factor(cluster))) + geom_line() + labs(y = "Mean Troops", x = "Castle") + scale_x_continuous(breaks = seq(1, 10, 1))
+```
+
+
+```{r kmeans_vis_box}
+
+ggplot(clustered_long, aes(x = castle, y = troops, color = factor(cluster))) + geom_boxplot(aes(group = castle))+ scale_x_continuous(breaks = seq(1, 10, 1)) + facet_grid(. ~ cluster)
+```
+
