@@ -1,0 +1,75 @@
+---
+title: "Battle for Riddler Nation Visualizations"
+output: html_notebook
+---
+
+```{r libraries}
+#devtools::install_github("hadley/tidyr")
+library(tidyverse)
+```
+
+```{r Convenience_functions}
+#Convenience functions I end up using a lot 
+numextract <- function(string){
+  as.numeric(str_extract(string, "\\-*\\d+\\.*\\d*"))
+}
+
+comma <- function(x) format(x, digits = 3, big.mark = ",")
+
+comma_0 <- function(x) format(x, digits = 0, big.mark = ",")
+
+
+```
+
+
+```{r data_in}
+
+hist_data <- read_csv("castle-solutions-3.csv") %>% 
+  mutate('Castle 2' = numextract('Castle 2')) %>%
+  select(-'Why did you choose your troop deployment?') %>%
+  mutate(total = rowSums(.),
+         bad_total = ifelse(total == 100, 0, 1))
+
+summary(hist_data$total)
+```
+
+Only `r hist_data %>% filter(bad_total == 0) %>% nrow()` entries actually had 100 troops deployed!
+
+# do more cleaning, remove entries that were way off and 
+
+```{r filter_and_normalize}
+
+hist_data <- hist_data %>%
+  filter(total > 94 & total < 105) %>%
+  mutate_at(vars(-total, - bad_total), list(~ round(100*(.) / total, digits = 0))) %>%
+  select(-total, -bad_total)
+
+
+write_csv(hist_data, "clean_comp_3_data.csv")
+```
+
+# plot shit
+```{r boxplot}
+hist_data_long <- hist_data %>%
+  pivot_longer(everything(), names_to = "castle", values_to = "troops") %>%
+  mutate(castle = numextract(castle))
+
+ggplot(hist_data_long, aes(x = castle, y = troops)) + geom_boxplot(aes(group = castle))+ scale_x_continuous(breaks = seq(1, 10, 1))
+```
+
+
+```{r density_plot}
+ggplot(hist_data_long, aes(x = troops, y = castle, group = castle)) + ggridges::geom_density_ridges() + scale_y_continuous(breaks = seq(1, 10, 1))
+```
+
+
+```{r median_troop_by_castle}
+hist_data_long %>%
+  group_by(castle) %>%
+  summarise(median_troops = median(troops)) %>%
+  ggplot(aes(x = castle, y = median_troops)) + geom_line() + labs(y = "Median Troops", x = "Castle") + scale_x_continuous(breaks = seq(1, 10, 1))
+```
+
+
+
+

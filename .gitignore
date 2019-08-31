@@ -1,0 +1,14 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!*.rmd
+!*.md
+!*.ipynb
+!*.csv
+# etc...
+
+# ...even if they are in subdirectories
+!*/
+.Rproj.user
