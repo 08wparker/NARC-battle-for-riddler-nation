@@ -49,6 +49,23 @@ clustered_long %>%
 
 ```{r kmeans_vis_box}
 
-ggplot(clustered_long, aes(x = castle, y = troops, color = factor(cluster))) + geom_boxplot(aes(group = castle))+ scale_x_continuous(breaks = seq(1, 10, 1)) + facet_grid(. ~ cluster)
+ggplot(clustered_long, aes(x = castle, y = troops, color = factor(cluster))) + 
+  geom_boxplot(aes(group = castle))+ 
+  scale_x_continuous(breaks = seq(1, 10, 1)) + 
+  facet_grid(. ~ cluster)
+```
+
+
+```{r castle_10_dist}
+
+plot_castle <- function(i){
+  clustered_strats %>%
+    group_by(cluster) %>%
+    summary(i)
+  
+}
+
+clustered_strats %>%
+  summary()
 ```
 

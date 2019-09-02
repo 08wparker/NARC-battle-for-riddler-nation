@@ -24,9 +24,9 @@ comma_0 <- function(x) format(x, digits = 0, big.mark = ",")
 
 ```{r data_in}
 
-hist_data <- read_csv("castle-solutions-3.csv") %>% 
-  mutate('Castle 2' = numextract('Castle 2')) %>%
-  select(-'Why did you choose your troop deployment?') %>%
+hist_data <- read_csv("castle-solutions-3.csv") %>%
+  select(-"Why did you choose your troop deployment?") %>%
+  mutate_all(as.numeric) %>%
   mutate(total = rowSums(.),
          bad_total = ifelse(total == 100, 0, 1))
 
@@ -40,8 +40,9 @@ Only `r hist_data %>% filter(bad_total == 0) %>% nrow()` entries actually had 10
 ```{r filter_and_normalize}
 
 hist_data <- hist_data %>%
-  filter(total > 94 & total < 105) %>%
-  mutate_at(vars(-total, - bad_total), list(~ round(100*(.) / total, digits = 0)))
+  filter(bad_total == 0)
+  #filter(total > 94 & total < 105) %>%
+  #mutate_at(vars(-total, - bad_total), list(~ round(100*(.) / total, digits = 0)))
 #write_out_clean_data
 write_csv(hist_data  %>%
   select(-total, -bad_total), "clean_comp_3_data.csv")
